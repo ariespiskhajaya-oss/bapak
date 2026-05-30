@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jokes Bapak-Bapak Generator</title>
+<title>Jokes Bapack - Bapack</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -53,12 +53,13 @@
 
   .input-group {
     display: flex;
+    flex-direction: column;
     gap: 0.6rem;
     margin-bottom: 1rem;
   }
 
   .input-group input {
-    flex: 1;
+    width: 100%;
     padding: 0.9rem 1.2rem;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
@@ -70,8 +71,9 @@
   .input-group input:focus { border-color: #e67e22; }
   .input-group input::placeholder { color: #bdc3c7; }
 
-  .input-group button {
-    padding: 0.9rem 1.6rem;
+  #generateBtn {
+    width: fit-content;
+    padding: 0.7rem 1.8rem;
     background: #e67e22;
     color: white;
     border: none;
@@ -80,12 +82,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
-    white-space: nowrap;
+    align-self: center;
   }
 
-  .input-group button:hover { background: #d35400; }
-  .input-group button:active { transform: scale(0.97); }
-  .input-group button:disabled { background: #bdc3c7; cursor: not-allowed; }
+  #generateBtn:hover { background: #d35400; }
+  #generateBtn:active { transform: scale(0.97); }
+  #generateBtn:disabled { background: #bdc3c7; cursor: not-allowed; }
 
   .quick-keywords {
     display: flex;
@@ -185,7 +187,7 @@
 <body>
 <div class="container">
   <header>
-    <h1>&#9871; Jokes Bapak-Bapak</h1>
+    <h1>&#9871; Jokes Bapack - Bapack</h1>
     <p>Masukin keyword, dapet jokes receh</p>
     <div class="status-bar">
       <span class="status-badge" id="statusBadge">&#9881; Cek koneksi...</span>
@@ -198,16 +200,7 @@
       <button id="generateBtn">Buat Jokes</button>
     </div>
 
-    <div class="quick-keywords">
-      <button onclick="setKeyword('ayam')">ayam</button>
-      <button onclick="setKeyword('kopi')">kopi</button>
-      <button onclick="setKeyword('hujan')">hujan</button>
-      <button onclick="setKeyword('kucing')">kucing</button>
-      <button onclick="setKeyword('cinta')">cinta</button>
-      <button onclick="setKeyword('telur')">telur</button>
-      <button onclick="setKeyword('kursi')">kursi</button>
-      <button onclick="setKeyword('ular')">ular</button>
-    </div>
+    <div class="quick-keywords" id="quickKeywords"></div>
   </div>
 
   <div class="card result" id="resultCard">
@@ -248,6 +241,34 @@ const LOCAL_JOKES = [
   { q: "Kasur dibalik jadi apa?", a: "Rusak" },
   { q: "Kenapa jam dinding muter terus?", a: "Nggak mau stuck di masa lalu" },
 ];
+
+const KEYWORD_POOL = [
+  'ayam','kopi','hujan','kucing','cinta','telur','kursi','ular','sapi','kambing',
+  'bebek','ikan','nasi','mie','bakso','soto','kereta','sepeda','motor','mobil',
+  'bantal','kasur','lampu','pintu','jendela','atap','dinding','lantai','taman','pohon',
+  'bunga','angin','api','air','tanah','gunung','pantai','sawah','padi','gajah',
+  'semut','nyamuk','lalat','kecoa','belut','lele','gurame','bandeng','tahu','tempe',
+  'sambal','kecap','garam','gula','susu','roti','keju','apel','pisang','durian',
+  'mangga','jeruk','semangka','melon','anggur','wortel','kol','bayam','kangkung','tomat',
+  'cerita','lagu','film','buku','sekolah','kantor','pasar','mall','masjid','gereja',
+];
+const KEYWORD_COUNT = 8;
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderQuickKeywords() {
+  const container = document.getElementById('quickKeywords');
+  const shuffled = shuffleArray([...KEYWORD_POOL]);
+  container.innerHTML = shuffled.slice(0, KEYWORD_COUNT)
+    .map(kw => `<button onclick="setKeyword('${kw}')">${kw}</button>`)
+    .join('');
+}
 
 let apiConfigured = false;
 
@@ -344,6 +365,7 @@ async function generateJoke() {
     el.classList.add('active');
   } finally {
     document.getElementById('generateBtn').disabled = false;
+    renderQuickKeywords();
   }
 }
 
@@ -353,6 +375,7 @@ document.getElementById('keyword').addEventListener('keydown', function(e) {
 
 document.getElementById('generateBtn').addEventListener('click', generateJoke);
 
+renderQuickKeywords();
 checkStatus();
 </script>
 </body>
