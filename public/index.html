@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jokes Bapak-Bapak Generator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #fef9e7 0%, #fdebd0 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    color: #2c3e50;
+  }
+
+  .container { max-width: 640px; width: 100%; }
+
+  header { text-align: center; margin-bottom: 2rem; }
+
+  header h1 {
+    font-size: 2.2rem;
+    color: #e67e22;
+    text-shadow: 2px 2px 0 #f39c12;
+    letter-spacing: 1px;
+  }
+
+  header p { color: #7f8c8d; margin-top: 0.3rem; font-style: italic; }
+
+  .status-bar {
+    display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.6rem;
+  }
+
+  .status-badge {
+    font-size: 0.7rem; padding: 0.2rem 0.7rem; border-radius: 10px;
+    background: #f0f0f0; color: #95a5a6; display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+
+  .status-badge.online { background: #eafaf1; color: #27ae60; }
+  .status-badge.offline { background: #fdedec; color: #e74c3c; }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.8rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    margin-bottom: 1.2rem;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .input-group input {
+    flex: 1;
+    padding: 0.9rem 1.2rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-group input:focus { border-color: #e67e22; }
+  .input-group input::placeholder { color: #bdc3c7; }
+
+  .input-group button {
+    padding: 0.9rem 1.6rem;
+    background: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .input-group button:hover { background: #d35400; }
+  .input-group button:active { transform: scale(0.97); }
+  .input-group button:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+  .quick-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .quick-keywords button {
+    padding: 0.35rem 0.8rem;
+    background: #fef5e7;
+    color: #e67e22;
+    border: 1.5px solid #fad7a0;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .quick-keywords button:hover {
+    background: #e67e22;
+    color: white;
+    border-color: #e67e22;
+  }
+
+  .result {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .result .placeholder { color: #bdc3c7; font-size: 1rem; }
+  .result .placeholder .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  .result .joke-text {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: #2c3e50;
+    width: 100%;
+  }
+
+  .result .joke-text .question {
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    color: #2c3e50;
+  }
+
+  .result .joke-text .answer { color: #e67e22; font-weight: 600; }
+  .result .joke-text .answer::before { content: "Jawaban: "; font-weight: 400; color: #7f8c8d; }
+
+  .result .source-badge {
+    margin-top: 0.8rem;
+    font-size: 0.7rem;
+    color: #95a5a6;
+    background: #f0f0f0;
+    padding: 0.2rem 0.7rem;
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  .loading { display: none; }
+  .loading.active { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid #f0f0f0;
+    border-top: 3px solid #e67e22;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    background: #fdedec;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    display: none;
+  }
+
+  .error.active { display: block; }
+
+  footer {
+    margin-top: 2rem;
+    color: #bdc3c7;
+    font-size: 0.75rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>&#9871; Jokes Bapak-Bapak</h1>
+    <p>Masukin keyword, dapet jokes receh</p>
+    <div class="status-bar">
+      <span class="status-badge" id="statusBadge">&#9881; Cek koneksi...</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="input-group">
+      <input type="text" id="keyword" placeholder="Cth: ayam, kucing, kopi, hujan..." autofocus>
+      <button id="generateBtn">Buat Jokes</button>
+    </div>
+
+    <div class="quick-keywords">
+      <button onclick="setKeyword('ayam')">ayam</button>
+      <button onclick="setKeyword('kopi')">kopi</button>
+      <button onclick="setKeyword('hujan')">hujan</button>
+      <button onclick="setKeyword('kucing')">kucing</button>
+      <button onclick="setKeyword('cinta')">cinta</button>
+      <button onclick="setKeyword('telur')">telur</button>
+      <button onclick="setKeyword('kursi')">kursi</button>
+      <button onclick="setKeyword('ular')">ular</button>
+    </div>
+  </div>
+
+  <div class="card result" id="resultCard">
+    <div id="placeholder" class="placeholder">
+      <div class="icon">&#129315;</div>
+      <div>Masukin keyword, dapet jokes bapak-bapak</div>
+    </div>
+    <div id="jokeDisplay" class="joke-text" style="display:none;">
+      <div id="question" class="question"></div>
+      <div id="answer" class="answer"></div>
+      <div id="source" class="source-badge"></div>
+    </div>
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <div style="color:#95a5a6;">Ngarang jokes...</div>
+    </div>
+    <div id="error" class="error"></div>
+  </div>
+
+  <footer>Dibuat dengan &#10084; untuk bapak-bapak Indonesia</footer>
+</div>
+
+<script>
+const LOCAL_JOKES = [
+  { q: "Ayam apa yang bikin kesel?", a: "Ayam habis, nasi masih banyak" },
+  { q: "Kopi apa yang bisa nyapit?", a: "Kopi-ting" },
+  { q: "Kenapa hujan bikin orang galau?", a: "Soalnya jatuhnya barengan" },
+  { q: "Kenapa donat bolong?", a: "Cinta ayah utuh" },
+  { q: "Mangga apa yang serem?", a: "Manggaruk pantat singa" },
+  { q: "Kenapa kursi nggak pernah lari?", a: "Takut dibilang bangku cadangan" },
+  { q: "Lele apa yang bisa terbang?", a: "Kelelawar" },
+  { q: "Kucing apa yang kuno?", a: "Kucinggalan zaman" },
+  { q: "Telur apa yang terlihat sangar?", a: "Telur asin, karena ada tatonya" },
+  { q: "Apa beda semut dan manusia?", a: "Manusia bisa kesemutan" },
+  { q: "Kenapa laut asin?", a: "Ikannya keringetan" },
+  { q: "Kenapa kopi pahit?", a: "Hidupnya juga" },
+  { q: "Kaki seribu copot satu, sisa berapa?", a: "Masih banyak" },
+  { q: "Kasur dibalik jadi apa?", a: "Rusak" },
+  { q: "Kenapa jam dinding muter terus?", a: "Nggak mau stuck di masa lalu" },
+];
+
+let apiConfigured = false;
+
+async function checkStatus() {
+  const badge = document.getElementById('statusBadge');
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    apiConfigured = data.apiKeyConfigured;
+    if (apiConfigured) {
+      badge.className = 'status-badge online';
+      badge.innerHTML = '&#10003; OpenRouter siap (' + data.defaultModel + ')';
+    } else {
+      badge.className = 'status-badge offline';
+      badge.innerHTML = '&#9888; API key belum diatur';
+    }
+  } catch {
+    badge.className = 'status-badge offline';
+    badge.innerHTML = '&#9888; Server tidak terhubung';
+  }
+}
+
+function setKeyword(kw) {
+  document.getElementById('keyword').value = kw;
+  generateJoke();
+}
+
+function showLoading() {
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('jokeDisplay').style.display = 'none';
+  document.getElementById('error').classList.remove('active');
+  document.getElementById('loading').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loading').classList.remove('active');
+}
+
+function showJoke(question, answer, source) {
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('jokeDisplay').style.display = 'block';
+  document.getElementById('question').textContent = question;
+  document.getElementById('answer').textContent = answer;
+  document.getElementById('source').textContent = source || '';
+}
+
+function showError(msg) {
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('jokeDisplay').style.display = 'none';
+  const el = document.getElementById('error');
+  el.textContent = msg;
+  el.classList.add('active');
+}
+
+function getRandomLocalJoke() {
+  return LOCAL_JOKES[Math.floor(Math.random() * LOCAL_JOKES.length)];
+}
+
+async function generateJoke() {
+  const keyword = document.getElementById('keyword').value.trim();
+  if (!keyword) {
+    showError('Masukin dulu kata kuncinya, boss!');
+    return;
+  }
+
+  document.getElementById('generateBtn').disabled = true;
+  showLoading();
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword })
+    });
+
+    hideLoading();
+
+    if (res.ok) {
+      const data = await res.json();
+      showJoke(data.question, data.answer, 'LLM: ' + data.model);
+    } else {
+      const err = await res.json();
+      showJoke(getRandomLocalJoke().q, getRandomLocalJoke().a, 'Demo lokal');
+      const el = document.getElementById('error');
+      el.textContent = err.error || 'Gagal generate jokes';
+      el.classList.add('active');
+    }
+  } catch (err) {
+    hideLoading();
+    const local = getRandomLocalJoke();
+    showJoke(local.q, local.a, 'Demo lokal (fallback)');
+    const el = document.getElementById('error');
+    el.textContent = 'Server error: ' + err.message;
+    el.classList.add('active');
+  } finally {
+    document.getElementById('generateBtn').disabled = false;
+  }
+}
+
+document.getElementById('keyword').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') generateJoke();
+});
+
+document.getElementById('generateBtn').addEventListener('click', generateJoke);
+
+checkStatus();
+</script>
+</body>
+</html>
