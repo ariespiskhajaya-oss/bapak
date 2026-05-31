@@ -5,11 +5,11 @@ const path = require('path');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = process.env.OPENROUTER_MODEL || 'auto';
+const API_KEY = process.env.OPENAI_API_KEY;
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 if (!API_KEY) {
-  console.warn('⚠️  OPENROUTER_API_KEY belum diatur. Buat .env dari .env.example');
+  console.warn('⚠️  OPENAI_API_KEY belum diatur. Isi di .env');
 }
 
 app.use(cors());
@@ -76,20 +76,18 @@ app.post('/api/generate', async (req, res) => {
   }
 
   if (!API_KEY) {
-    return res.status(400).json({ error: 'OPENROUTER_API_KEY belum dikonfigurasi di server' });
+    return res.status(400).json({ error: 'OPENAI_API_KEY belum dikonfigurasi di server' });
   }
 
   try {
     const modelId = model || MODEL;
-    const url = 'https://openrouter.ai/api/v1/chat/completions';
+    const url = 'https://api.openai.com/v1/chat/completions';
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + API_KEY,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'Jokes Bapak-Bapak'
       },
       body: JSON.stringify({
         model: modelId,
@@ -103,7 +101,7 @@ app.post('/api/generate', async (req, res) => {
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error('OpenRouter API error (' + response.status + '): ' + errText);
+      throw new Error('OpenAI API error (' + response.status + '): ' + errText);
     }
 
     const data = await response.json();
@@ -127,7 +125,7 @@ app.get('/api/status', (req, res) => {
   res.json({
     apiKeyConfigured: !!API_KEY,
     defaultModel: MODEL,
-    provider: 'openrouter',
+    provider: 'openai',
   });
 });
 

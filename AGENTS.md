@@ -1,18 +1,18 @@
 # Jokes Bapak-Bapak Generator
 
-Webapp generate jokes bapak-bapak berdasarkan keyword menggunakan LLM via OpenRouter (auto-select model).
+Webapp generate jokes bapak-bapak berdasarkan keyword menggunakan LLM via OpenAI API.
 
 ## Stack
 - **Frontend:** HTML + JS (static, di `public/`)
 - **Backend:** Node.js + Express (`server.js`)
-- **LLM API:** OpenRouter API (`auto` — milihin model terbaik otomatis)
+- **LLM API:** OpenAI API (default `gpt-4o-mini`)
 
 ## Struktur
 ```
 /opt/bapak/
 ├── public/index.html   # Frontend
 ├── server.js           # Express server
-├── .env                # OPENROUTER_API_KEY + model config
+├── .env                # OPENAI_API_KEY + model config
 ├── package.json
 └── eg-jokes.txt        # Referensi gaya jokes (few-shot)
 ```
@@ -34,8 +34,8 @@ pm2 save && pm2 startup
 ## Environment (.env)
 | Variable | Default | Keterangan |
 |---|---|---|
-| `OPENROUTER_API_KEY` | - | Wajib. Daftar di https://openrouter.ai/keys |
-| `OPENROUTER_MODEL` | `auto` | Model LLM (`auto` biar OpenRouter milihin sendiri) |
+| `OPENAI_API_KEY` | - | Wajib. Daftar di https://platform.openai.com/api-keys |
+| `OPENAI_MODEL` | `gpt-4o-mini` | Model OpenAI (contoh: `gpt-4o`, `gpt-4o-mini`) |
 | `PORT` | `3000` | Port server |
 
 ## API Endpoints
@@ -44,7 +44,7 @@ pm2 save && pm2 startup
 
 ## Alur generate
 1. User input keyword
-2. Backend panggil OpenRouter API dengan few-shot examples dari `eg-jokes.txt`
+2. Backend panggil OpenAI API dengan few-shot examples dari `eg-jokes.txt`
 3. LLM generate jokes, keyword **wajib** muncul di soal/jawaban
 4. Kalo gagal/error, fallback ke random jokes dari koleksi lokal
 
